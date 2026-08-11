@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -9,16 +8,22 @@ import Button from "../../components/common/Button";
 
 import { registerUser } from "../../services/authService";
 
-function Register() {
-  const [loading, setLoading] = useState(false);
+import toast from "react-hot-toast";
 
+function Register() {
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
+    address: "",
+    city: "",
     password: "",
     confirmPassword: "",
+    role: "customer",
   });
 
   const handleChange = (e) => {
@@ -31,28 +36,32 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Password confirmation
     if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const response = await registerUser({
+    try {
+      const data = await registerUser({
         name: form.name,
         email: form.email,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
         password: form.password,
+        role: form.role,
       });
 
-      // Registration successful
-      alert(response.data.message || "Registration successful!");
+      toast.success("Registration successful! Please login.");
 
-      // Navigate to Login page
       navigate("/login");
+    } catch (error) {
+      console.error("REGISTER ERROR:", error.response?.data || error);
 
-    } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -61,21 +70,25 @@ function Register() {
   return (
     <AuthLayout>
       <h1 className="text-3xl font-bold text-center text-green-600">
-        Maruthani World
+        Create Account
       </h1>
 
-      <p className="text-center text-gray-500 mt-2 mb-8">
-        Create your account
-      </p>
+      <p className="text-center text-gray-500 mb-8">Join Maruthani World</p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name */}
+
         <Input
           label="Full Name"
+          type="text"
           name="name"
-          placeholder="Enter your full name"
+          placeholder="Enter your name"
           value={form.name}
           onChange={handleChange}
+          required
         />
+
+        {/* Email */}
 
         <Input
           label="Email"
@@ -84,7 +97,67 @@ function Register() {
           placeholder="Enter your email"
           value={form.email}
           onChange={handleChange}
+          required
         />
+
+        {/* Phone */}
+
+        <Input
+          label="Phone Number"
+          type="tel"
+          name="phone"
+          placeholder="Enter your phone number"
+          value={form.phone}
+          onChange={handleChange}
+          required
+        />
+
+        {/* Address */}
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Address</label>
+
+          <textarea
+            name="address"
+            placeholder="Enter your address"
+            value={form.address}
+            onChange={handleChange}
+            required
+            rows="3"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        {/* City */}
+
+        <Input
+          label="City"
+          type="text"
+          name="city"
+          placeholder="Enter your city"
+          value={form.city}
+          onChange={handleChange}
+          required
+        />
+
+        {/* Role */}
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Register As</label>
+
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="customer">Customer</option>
+
+            <option value="artist">Artist</option>
+          </select>
+        </div>
+
+        {/* Password */}
 
         <PasswordInput
           label="Password"
@@ -94,6 +167,8 @@ function Register() {
           onChange={handleChange}
         />
 
+        {/* Confirm Password */}
+
         <PasswordInput
           label="Confirm Password"
           name="confirmPassword"
@@ -102,14 +177,18 @@ function Register() {
           onChange={handleChange}
         />
 
+        {/* Submit */}
+
         <Button text="Create Account" loading={loading} />
       </form>
 
-      <p className="text-center text-gray-600 mt-6">
-        Already have an account?{" "}
+      {/* Login */}
+
+      <p className="text-center mt-6 text-gray-600">
+        Already have an account?
         <Link
           to="/login"
-          className="text-green-600 font-semibold hover:text-pink-700 hover:underline"
+          className="text-green-600 ml-2 font-bold hover:underline"
         >
           Login
         </Link>
@@ -119,4 +198,3 @@ function Register() {
 }
 
 export default Register;
-

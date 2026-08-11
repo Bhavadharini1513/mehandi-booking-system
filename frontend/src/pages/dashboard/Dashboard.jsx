@@ -1,24 +1,45 @@
-import useAuth from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
-const Dashboard = () => {
-  const { user, logout } = useAuth();
+function Dashboard() {
+  const navigate = useNavigate();
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-      <h1 className="text-4xl font-bold">Welcome {user?.name}</h1>
+    <div className="min-h-screen bg-green-50 p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-green-700">
+          Welcome to Dashboard
+        </h1>
 
-      <p>{user?.email}</p>
+        <div className="mt-6 bg-white p-6 rounded-xl shadow">
+          <h2 className="text-2xl font-semibold">Hello, {user?.name}</h2>
 
-      <p>{user?.role}</p>
+          <p className="mt-2">Email: {user?.email}</p>
 
-      <button
-        onClick={logout}
-        className="mt-6 bg-red-600 text-white px-6 py-2 rounded"
-      >
-        Logout
-      </button>
+          <p>Role: {user?.role}</p>
+
+          <p>Phone: {user?.phone}</p>
+
+          <p>City: {user?.city}</p>
+
+          <button
+            onClick={handleLogout}
+            className="mt-6 bg-red-500 text-white px-5 py-2 rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default Dashboard;

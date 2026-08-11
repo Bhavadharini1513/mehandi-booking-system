@@ -9,6 +9,7 @@ const authorize = require("../middleware/roleMiddleware");
 const {
   getProfile,
   dashboard,
+  updateProfile,
   changePassword,
 } = require("../controllers/userController");
 
@@ -18,9 +19,7 @@ router.get("/dashboard", protect, dashboard);
 
 router.put("/change-password", protect, changePassword);
 
-/*
-Admin Route Example
-*/
+router.put("/profile", protect, updateProfile);
 
 router.get("/admin", protect, authorize("admin"), (req, res) => {
   res.json({

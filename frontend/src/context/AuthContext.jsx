@@ -1,44 +1,76 @@
 import { createContext, useEffect, useState } from "react";
+import { getProfile } from "../services/authService";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (token) {
-      setUser(JSON.parse(localStorage.getItem("user")));
-    }
-    setLoading(false);
-  }, [token]);
+  // Authentication status
+  const isAuthenticated = !!localStorage.getItem("token");
 
-  const login = (userData, jwtToken) => {
+  useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem("token");
+
+      // No token
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getProfile();
+
+        console.log("PROFILE RESPONSE:", data);
+
+        if (data.success && data.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error(
+          "Authentication error:",
+          error.response?.data || error.message,
+        );
+
+        // Don't immediately remove token here
+        // while testing authentication
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, []);
+
+  const login = (userData, token) => {
+    localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", jwtToken);
 
     setUser(userData);
-    setToken(jwtToken);
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
     setUser(null);
-    setToken("");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
+        setUser,
         login,
         logout,
         loading,
-        isAuthenticated: !!token,
+        isAuthenticated,
       }}
     >
       {children}
