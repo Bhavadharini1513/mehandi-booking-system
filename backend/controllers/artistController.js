@@ -1,44 +1,63 @@
-const User = require("../models/User");
 const ArtistProfile = require("../models/ArtistProfile");
+const User = require("../models/User");
 
-// ======================================================
-// CUSTOMER -> APPLY TO BECOME ARTIST
-// ======================================================
+/*
+=========================================================
+BECOME ARTIST
+Customer submits artist application
+=========================================================
+*/
 
 const becomeArtist = async (req, res) => {
   try {
-    const {
-      experience,
-      specialization,
-      bio,
-      location,
-      availableLocations,
-      availableTime,
-      services,
-      profileImage,
-    } = req.body;
+    const { experience, specialization, location, services, bio } = req.body;
 
-    if (
-      experience === undefined ||
-      !specialization ||
-      !bio ||
-      !location ||
-      !availableTime
-    ) {
+    const userId = req.user._id;
+
+    /* -----------------------------------------
+       Check required fields
+    ----------------------------------------- */
+
+    if (experience === undefined || experience === null || experience === "") {
       return res.status(400).json({
         success: false,
-        message: "Please fill all required artist details",
+        message: "Please enter your experience",
       });
     }
 
-    if (Number(experience) < 0) {
+    if (!specialization || specialization.trim() === "") {
       return res.status(400).json({
         success: false,
-        message: "Experience cannot be negative",
+        message: "Please enter your specialization",
       });
     }
 
-    const user = await User.findById(req.user._id);
+    if (!location || location.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter your location",
+      });
+    }
+
+    if (!services || !Array.isArray(services) || services.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select at least one service",
+      });
+    }
+
+    if (!bio || bio.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter your bio",
+      });
+    }
+
+    /* -----------------------------------------
+       Check user role
+    ----------------------------------------- */
+
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -47,236 +66,100 @@ const becomeArtist = async (req, res) => {
       });
     }
 
-    // Only customers can apply
-    if (user.role !== "customer") {
+    if (user.role === "artist") {
       return res.status(400).json({
         success: false,
-        message: "Only customers can apply to become an artist",
+        message: "You are already an approved artist",
       });
     }
 
-    const existingProfile = await ArtistProfile.findOne({
-      user: user._id,
+    if (user.role === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin cannot submit an artist application",
+      });
+    }
+
+    /* -----------------------------------------
+       Check existing application
+    ----------------------------------------- */
+
+    const existingApplication = await ArtistProfile.findOne({
+      user: userId,
     });
 
-    if (existingProfile) {
-      return res.status(400).json({
-        success: false,
-        message: "Artist application already exists",
-        status: existingProfile.status,
-      });
+    if (existingApplication) {
+      if (existingApplication.status === "pending") {
+        return res.status(400).json({
+          success: false,
+          message: "Your artist application is already pending",
+        });
+      }
+
+      if (existingApplication.status === "approved") {
+        return res.status(400).json({
+          success: false,
+          message: "You are already an approved artist",
+        });
+      }
+
+      /*
+       If previously rejected, allow resubmission
+      */
+
+      if (existingApplication.status === "rejected") {
+        existingApplication.experience = experience;
+        existingApplication.specialization = specialization.trim();
+        existingApplication.location = location.trim();
+        existingApplication.services = services;
+        existingApplication.bio = bio.trim();
+        existingApplication.status = "pending";
+
+        await existingApplication.save();
+
+        return res.status(200).json({
+          success: true,
+          message: "Artist application resubmitted successfully",
+          application: existingApplication,
+        });
+      }
     }
 
-    const artistProfile = await ArtistProfile.create({
-      user: user._id,
-      experience: Number(experience),
-      specialization,
-      bio,
-      location,
+    /* -----------------------------------------
+       Create new application
+    ----------------------------------------- */
 
-      availableLocations: Array.isArray(availableLocations)
-        ? availableLocations
-        : [],
-
-      availableTime,
-
-      services: Array.isArray(services) ? services : [],
-
-      profileImage: profileImage || "",
-
+    const application = await ArtistProfile.create({
+      user: userId,
+      experience,
+      specialization: specialization.trim(),
+      location: location.trim(),
+      services,
+      bio: bio.trim(),
       status: "pending",
     });
 
-    // IMPORTANT:
-    // Do NOT change customer to artist here.
-    // Admin must approve first.
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message:
-        "Artist application submitted successfully. Waiting for admin approval.",
-
-      profile: artistProfile,
+      message: "Artist application submitted successfully",
+      application,
     });
   } catch (error) {
     console.error("BECOME ARTIST ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to submit artist application",
+      error: error.message,
     });
   }
 };
 
-// ======================================================
-// CUSTOMER -> VIEW OWN APPLICATION
-// ======================================================
-
-const getMyApplication = async (req, res) => {
-  try {
-    const profile = await ArtistProfile.findOne({
-      user: req.user._id,
-    }).populate("user", "name email phone address city role");
-
-    if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Artist application not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      profile,
-    });
-  } catch (error) {
-    console.error("GET APPLICATION ERROR:", error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// ======================================================
-// ADMIN -> VIEW PENDING APPLICATIONS
-// ======================================================
-
-const getArtistApplications = async (req, res) => {
-  try {
-    const applications = await ArtistProfile.find({
-      status: "pending",
-    })
-      .populate("user", "name email phone address city role")
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: applications.length,
-      applications,
-    });
-  } catch (error) {
-    console.error("GET ARTIST APPLICATIONS ERROR:", error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// ======================================================
-// ADMIN -> APPROVE ARTIST
-// ======================================================
-
-const approveArtist = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const profile = await ArtistProfile.findById(id);
-
-    if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Artist application not found",
-      });
-    }
-
-    if (profile.status !== "pending") {
-      return res.status(400).json({
-        success: false,
-        message: `Application is already ${profile.status}`,
-      });
-    }
-
-    profile.status = "approved";
-    await profile.save();
-
-    const user = await User.findById(profile.user);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "Artist user not found",
-      });
-    }
-
-    // NOW customer becomes artist
-    user.role = "artist";
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Artist approved successfully",
-
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-
-      profile,
-    });
-  } catch (error) {
-    console.error("APPROVE ARTIST ERROR:", error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// ======================================================
-// ADMIN -> REJECT ARTIST
-// ======================================================
-
-const rejectArtist = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const profile = await ArtistProfile.findById(id);
-
-    if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Artist application not found",
-      });
-    }
-
-    if (profile.status !== "pending") {
-      return res.status(400).json({
-        success: false,
-        message: `Application is already ${profile.status}`,
-      });
-    }
-
-    profile.status = "rejected";
-
-    await profile.save();
-
-    // User remains customer
-    res.status(200).json({
-      success: true,
-      message: "Artist application rejected",
-      profile,
-    });
-  } catch (error) {
-    console.error("REJECT ARTIST ERROR:", error);
-
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// ======================================================
-// ARTIST -> GET PROFILE
-// ======================================================
+/*
+=========================================================
+GET ARTIST PROFILE
+=========================================================
+*/
 
 const getArtistProfile = async (req, res) => {
   try {
@@ -291,51 +174,164 @@ const getArtistProfile = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       profile,
     });
   } catch (error) {
     console.error("GET ARTIST PROFILE ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch artist profile",
     });
   }
 };
 
-// ======================================================
-// PUBLIC -> GET APPROVED ARTISTS
-// ======================================================
+/*
+=========================================================
+ADMIN - GET PENDING APPLICATIONS
+=========================================================
+*/
 
-const getApprovedArtists = async (req, res) => {
+const getPendingApplications = async (req, res) => {
   try {
-    const artists = await ArtistProfile.find({
-      status: "approved",
-    }).populate("user", "name email phone city");
+    const applications = await ArtistProfile.find({
+      status: "pending",
+    })
+      .populate("user", "name email phone address city role")
+      .sort({
+        createdAt: -1,
+      });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      count: artists.length,
-      artists,
+      count: applications.length,
+      applications,
     });
   } catch (error) {
-    console.error("GET APPROVED ARTISTS ERROR:", error);
+    console.error("GET APPLICATIONS ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch artist applications",
+    });
+  }
+};
+
+/*
+=========================================================
+ADMIN - APPROVE
+=========================================================
+*/
+
+const approveArtist = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const profile = await ArtistProfile.findById(id);
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Artist application not found",
+      });
+    }
+
+    const user = await User.findById(profile.user);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    /*
+    Change application status
+    */
+
+    profile.status = "approved";
+
+    await profile.save();
+
+    /*
+    Update ONLY role.
+
+    Do not use user.save()
+    because old users may have empty
+    phone/address/city fields.
+    */
+
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          role: "artist",
+        },
+      },
+      {
+        new: true,
+        runValidators: false,
+      },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Artist application approved successfully",
+    });
+  } catch (error) {
+    console.error("APPROVE ARTIST ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to approve artist application",
+      error: error.message,
+    });
+  }
+};
+
+/*
+=========================================================
+ADMIN - REJECT
+=========================================================
+*/
+
+const rejectArtist = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const profile = await ArtistProfile.findById(id);
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Artist application not found",
+      });
+    }
+
+    profile.status = "rejected";
+
+    await profile.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Artist application rejected successfully",
+    });
+  } catch (error) {
+    console.error("REJECT ARTIST ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reject artist application",
     });
   }
 };
 
 module.exports = {
   becomeArtist,
-  getMyApplication,
-  getArtistApplications,
+  getArtistProfile,
+  getPendingApplications,
   approveArtist,
   rejectArtist,
-  getArtistProfile,
-  getApprovedArtists,
 };

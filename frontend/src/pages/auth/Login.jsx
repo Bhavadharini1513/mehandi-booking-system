@@ -39,15 +39,25 @@ function Login() {
 
       console.log("LOGIN RESPONSE:", res);
 
-      if (!res.token) {
+      if (!res || !res.token) {
         toast.error("Token not received");
         return;
       }
 
+      if (!res.user) {
+        toast.error("User information not received");
+        return;
+      }
+
+      console.log("USER:", res.user);
+      console.log("ROLE:", res.user.role);
+
+      // Save login state
       login(res.user, res.token);
 
       toast.success("Login Successful");
 
+      // Redirect based on role
       if (res.user.role === "admin") {
         navigate("/admin/dashboard");
       } else if (res.user.role === "artist") {

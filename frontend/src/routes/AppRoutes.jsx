@@ -12,6 +12,10 @@ import Navbar from "../components/layouts/Navbar";
 import ArtistApplicationStatus from "../pages/artist/ArtistApplicationStatus";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminNavbar from "../components/layouts/AdminNavbar";
+import Customers from "../pages/admin/Customers";
+import Artists from "../pages/admin/Artists";
+import ArtistApplications from "../pages/admin/ArtistApplications";
+import Bookings from "../pages/admin/Bookings";
 
 function CustomerLayout({ children }) {
   return (
@@ -94,12 +98,58 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* ================= ADMIN ================= */}
+
       <Route
         path="/admin/dashboard"
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminLayout>
               <AdminDashboard />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/customers"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout>
+              <Customers />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/artists"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout>
+              <Artists />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/applications"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout>
+              <ArtistApplications />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/bookings"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout>
+              <Bookings />
             </AdminLayout>
           </ProtectedRoute>
         }

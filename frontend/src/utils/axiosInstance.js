@@ -11,8 +11,6 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    console.log("TOKEN SENT:", token);
-
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,6 +18,24 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  },
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+
+  (error) => {
+    if (error.response?.status === 401) {
+      console.log("Unauthorized request");
+    }
+
+    if (error.response?.status === 403) {
+      console.log("Admin access denied");
+    }
+
     return Promise.reject(error);
   },
 );

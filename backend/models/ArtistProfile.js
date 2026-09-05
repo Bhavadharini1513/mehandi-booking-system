@@ -1,27 +1,19 @@
 const mongoose = require("mongoose");
 
-const ArtistProfileSchema = new mongoose.Schema(
+const artistProfileSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
     },
 
     experience: {
       type: Number,
       required: true,
-      min: 0,
     },
 
     specialization: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    bio: {
       type: String,
       required: true,
       trim: true,
@@ -33,41 +25,15 @@ const ArtistProfileSchema = new mongoose.Schema(
       trim: true,
     },
 
-    availableLocations: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    services: {
+      type: [String],
+      required: true,
+    },
 
-    availableTime: {
+    bio: {
       type: String,
       required: true,
       trim: true,
-    },
-
-    services: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-
-    profileImage: {
-      type: String,
-      default: "",
-    },
-
-    rating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-    },
-
-    totalReviews: {
-      type: Number,
-      default: 0,
     },
 
     status: {
@@ -81,4 +47,4 @@ const ArtistProfileSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("ArtistProfile", ArtistProfileSchema);
+module.exports = mongoose.model("ArtistProfile", artistProfileSchema);

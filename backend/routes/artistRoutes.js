@@ -7,46 +7,50 @@ const authorize = require("../middleware/roleMiddleware");
 
 const {
   becomeArtist,
-  registerArtist,
-  getMyApplication,
-  getArtistApplications,
+  getArtistProfile,
+  getPendingApplications,
   approveArtist,
   rejectArtist,
-  getArtistProfile,
-  getApprovedArtists,
 } = require("../controllers/artistController");
 
-// ======================================================
-// PUBLIC
-// ======================================================
+/*
+=========================================================
+CUSTOMER
+Submit artist application
+=========================================================
+*/
 
-// View approved artists
-router.get("/approved", getApprovedArtists);
+router.post("/become-artist", protect, becomeArtist);
 
-// New user -> Register as artist
-// NO TOKEN REQUIRED
-router.post("/register", registerArtist);
-
-// ======================================================
-// CUSTOMER
-// ======================================================
-
-// Existing logged-in customer -> Become artist
-router.post("/become-artist", protect, authorize("customer"), becomeArtist);
-
-router.get("/my-application", protect, getMyApplication);
-
-// ======================================================
-// ARTIST
-// ======================================================
+/*
+=========================================================
+ARTIST
+Get own artist profile
+=========================================================
+*/
 
 router.get("/profile", protect, authorize("artist"), getArtistProfile);
 
-// ======================================================
-// ADMIN
-// ======================================================
+/*
+=========================================================
+ADMIN
+Get pending applications
+=========================================================
+*/
 
-router.get("/applications", protect, authorize("admin"), getArtistApplications);
+router.get(
+  "/applications",
+  protect,
+  authorize("admin"),
+  getPendingApplications,
+);
+
+/*
+=========================================================
+ADMIN
+Approve application
+=========================================================
+*/
 
 router.put(
   "/applications/:id/approve",
@@ -55,12 +59,18 @@ router.put(
   approveArtist,
 );
 
+/*
+=========================================================
+ADMIN
+Reject application
+=========================================================
+*/
+
 router.put(
   "/applications/:id/reject",
   protect,
   authorize("admin"),
   rejectArtist,
 );
-
 
 module.exports = router;

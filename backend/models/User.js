@@ -1,16 +1,16 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
       trim: true,
     },
 
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -18,25 +18,25 @@ const UserSchema = new mongoose.Schema(
 
     phone: {
       type: String,
-      required: true,
+      required: [true, "Phone number is required"],
       trim: true,
     },
 
     address: {
       type: String,
-      required: true,
+      required: [true, "Address is required"],
       trim: true,
     },
 
     city: {
       type: String,
-      required: true,
+      required: [true, "City is required"],
       trim: true,
     },
 
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
     },
 
     role: {
@@ -50,4 +50,4 @@ const UserSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", userSchema);
