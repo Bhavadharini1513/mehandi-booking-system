@@ -1,0 +1,142 @@
+/* frontend/src/styles/BecomeArtist.css */
+
+.become-artist-page {
+  min-height: 100vh;
+  background: #f0fdf4;
+  padding: 40px 16px;
+}
+
+.become-artist-container {
+  max-width: 850px;
+  margin: auto;
+}
+
+.become-artist-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+}
+
+.become-artist-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.become-artist-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.become-artist-title {
+  color: #047857;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.become-artist-subtitle {
+  color: #6b7280;
+  margin-top: 8px;
+}
+
+.artist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+  font-size: 15px;
+  transition: 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.form-help {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.artist-note {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 16px;
+  border-radius: 10px;
+  color: #065f46;
+  font-size: 14px;
+}
+
+.artist-submit-btn {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  background: #059669;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.artist-submit-btn:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.artist-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.artist-cancel-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.artist-cancel-btn:hover {
+  background: #f9fafb;
+}
+
+@media (max-width: 640px) {
+  .become-artist-page {
+    padding: 20px 12px;
+  }
+
+  .become-artist-card {
+    padding: 24px 18px;
+  }
+
+  .become-artist-title {
+    font-size: 25px;
+  }
+}

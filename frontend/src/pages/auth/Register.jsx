@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import AuthLayout from "../../components/layouts/AuthLayout";
 import Input from "../../components/common/Input";
 import PasswordInput from "../../components/common/PasswordInput";
 import Button from "../../components/common/Button";
-
 import { registerUser } from "../../services/authService";
 
 import toast from "react-hot-toast";
@@ -23,7 +21,6 @@ function Register() {
     city: "",
     password: "",
     confirmPassword: "",
-    role: "customer",
   });
 
   const handleChange = (e) => {
@@ -52,7 +49,6 @@ function Register() {
         address: form.address,
         city: form.city,
         password: form.password,
-        role: form.role,
       });
 
       toast.success("Registration successful! Please login.");
@@ -140,22 +136,7 @@ function Register() {
           required
         />
 
-        {/* Role */}
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Register As</label>
-
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            <option value="customer">Customer</option>
-
-            <option value="artist">Artist</option>
-          </select>
-        </div>
+        
 
         {/* Password */}
 

@@ -1,52 +1,13 @@
-import { createContext, useEffect, useState } from "react";
-import { getProfile } from "../services/authService";
+import { createContext, useState } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
 
-  // Authentication status
-  const isAuthenticated = !!localStorage.getItem("token");
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem("token");
-
-      // No token
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await getProfile();
-
-        console.log("PROFILE RESPONSE:", data);
-
-        if (data.success && data.user) {
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error(
-          "Authentication error:",
-          error.response?.data || error.message,
-        );
-
-        // Don't immediately remove token here
-        // while testing authentication
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-  }, []);
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   const login = (userData, token) => {
     localStorage.setItem("token", token);
@@ -62,15 +23,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const isAuthenticated = !!localStorage.getItem("token");
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        setUser,
         login,
         logout,
-        loading,
         isAuthenticated,
+        loading: false,
       }}
     >
       {children}

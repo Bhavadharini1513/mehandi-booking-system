@@ -1,48 +1,110 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-import Dashboard from "../pages/dashboard/Dashboard";
-import Profile from "../pages/dashboard/Profile";
-import ChangePassword from "../pages/dashboard/ChangePassword";
-import ProtectedRoute from "./ProtectedRoute";
+
+import Home from "../pages/customer/Home";
+import BecomeArtist from "../pages/artist/BecomeArtist";
+import ArtistDashboard from "../pages/artist/ArtistDashboard";
+
+import ProtectedRoute from "../routes/ProtectedRoute";
+import Navbar from "../components/layouts/Navbar";
+import ArtistApplicationStatus from "../pages/artist/ArtistApplicationStatus";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminNavbar from "../components/layouts/AdminNavbar";
+
+function CustomerLayout({ children }) {
+  return (
+    <>
+      <Navbar />
+      {children}
+    </>
+  );
+}
+
+function AdminLayout({ children }) {
+  return (
+    <>
+      <AdminNavbar />
+      {children}
+    </>
+  );
+}
 
 function AppRoutes() {
   return (
-    
-      <Routes>
-        {/* Authentication */}
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+    <Routes>
+      {/* Login */}
+      <Route
+        path="/"
+        element={
+          <CustomerLayout>
+            <Home />
+          </CustomerLayout>
+        }
+      />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+      <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/change-password"
-          element={
-            <ProtectedRoute>
-              <ChangePassword />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    
+      {/* Register */}
+      <Route path="/register" element={<Register />} />
+
+      {/* Customer Home */}
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <CustomerLayout>
+              <Home />
+            </CustomerLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Become Artist */}
+      <Route
+        path="/become-artist"
+        element={
+          <ProtectedRoute>
+            <CustomerLayout>
+              <BecomeArtist />
+            </CustomerLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Artist Dashboard */}
+      <Route
+        path="/artist/dashboard"
+        element={
+          <ProtectedRoute>
+            <CustomerLayout>
+              <ArtistDashboard />
+            </CustomerLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/artist/application-status"
+        element={
+          <ProtectedRoute>
+            <CustomerLayout>
+              <ArtistApplicationStatus />
+            </CustomerLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 

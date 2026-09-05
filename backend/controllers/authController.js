@@ -2,17 +2,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// =============================
-// REGISTER
-// =============================
-
 const register = async (req, res) => {
   try {
-    console.log("REGISTER BODY:", req.body);
 
-    const { name, email, phone, address, city, password, role } = req.body;
+    const { name, email, phone, address, city, password, } = req.body;
 
-    // Check required fields
+    
     if (!name || !email || !phone || !address || !city || !password) {
       return res.status(400).json({
         success: false,
@@ -20,7 +15,7 @@ const register = async (req, res) => {
       });
     }
 
-    // Check existing email
+    
     const existingUser = await User.findOne({
       email: email.toLowerCase(),
     });
@@ -32,7 +27,7 @@ const register = async (req, res) => {
       });
     }
 
-    // Strong password validation
+    
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
@@ -44,13 +39,13 @@ const register = async (req, res) => {
       });
     }
 
-    // Only customer or artist can register
-    const userRole = role === "artist" ? "artist" : "customer";
+    
+    const userRole = "customer";
 
-    // Hash password
+    
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+  
     const user = await User.create({
       name,
       email: email.toLowerCase(),
@@ -61,7 +56,6 @@ const register = async (req, res) => {
       role: userRole,
     });
 
-    console.log("USER CREATED:", user._id);
 
     res.status(201).json({
       success: true,
@@ -87,9 +81,6 @@ const register = async (req, res) => {
   }
 };
 
-// =============================
-// LOGIN
-// =============================
 
 const login = async (req, res) => {
   try {
@@ -113,7 +104,7 @@ const login = async (req, res) => {
       });
     }
 
-    // Compare password
+    
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -123,7 +114,7 @@ const login = async (req, res) => {
       });
     }
 
-    // Create JWT
+  
     const token = jwt.sign(
       {
         id: user._id,

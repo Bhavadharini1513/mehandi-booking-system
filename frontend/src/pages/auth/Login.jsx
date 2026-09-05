@@ -5,6 +5,7 @@ import AuthLayout from "../../components/layouts/AuthLayout";
 import Input from "../../components/common/Input";
 import PasswordInput from "../../components/common/PasswordInput";
 import Button from "../../components/common/Button";
+
 import useAuth from "../../hooks/useAuth";
 import { loginUser } from "../../services/authService";
 
@@ -36,7 +37,7 @@ function Login() {
 
       const res = await loginUser(form);
 
-      
+      console.log("LOGIN RESPONSE:", res);
 
       if (!res.token) {
         toast.error("Token not received");
@@ -47,7 +48,13 @@ function Login() {
 
       toast.success("Login Successful");
 
-      navigate("/dashboard");
+      if (res.user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (res.user.role === "artist") {
+        navigate("/artist/dashboard");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       console.error("LOGIN ERROR:", err.response?.data || err.message);
 
