@@ -35,7 +35,7 @@ const getArtists = async (req, res) => {
   try {
     // Get all approved artist profiles
     const profiles = await ArtistProfile.find({
-      status: "approved",
+      $or: [{ status: "approved" }, { approvalStatus: "approved" }],
     }).sort({
       createdAt: -1,
     });
@@ -79,7 +79,7 @@ const getArtists = async (req, res) => {
 
         specialization: profile.specialization || "",
 
-        location: profile.location || "",
+        location: typeof profile.location === "object" && profile.location !== null ? (profile.location.city || profile.location.address || "Tamil Nadu") : (profile.location || "Tamil Nadu"),
 
         services: profile.services || [],
 
@@ -130,11 +130,11 @@ const getDashboardStats = async (req, res) => {
       User.countDocuments({ role: "artist" }),
 
       ArtistProfile.countDocuments({
-        status: "pending",
+        $or: [{ status: "pending" }, { approvalStatus: "pending" }],
       }),
 
       ArtistProfile.countDocuments({
-        status: "rejected",
+        $or: [{ status: "rejected" }, { approvalStatus: "rejected" }],
       }),
 
       Booking.countDocuments(),
@@ -184,7 +184,7 @@ const getDashboardStats = async (req, res) => {
 const getArtistApplications = async (req, res) => {
   try {
     const applications = await ArtistProfile.find({
-      status: "pending",
+      $or: [{ status: "pending" }, { approvalStatus: "pending" }],
     })
       .populate("user", "name email phone address city role")
       .sort({ createdAt: -1 });

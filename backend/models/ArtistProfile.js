@@ -149,10 +149,17 @@ artistProfileSchema.pre("save", function () {
     this.userId = this.user;
   }
 
-  if (this.approvalStatus && !this.status) {
+  // Synchronize status and approvalStatus
+  if (this.isModified("approvalStatus") && !this.isModified("status")) {
     this.status = this.approvalStatus;
-  } else if (this.status && !this.approvalStatus) {
+  } else if (this.isModified("status") && !this.isModified("approvalStatus")) {
     this.approvalStatus = this.status;
+  } else if (this.approvalStatus !== this.status) {
+    if (this.approvalStatus && this.approvalStatus !== "pending") {
+      this.status = this.approvalStatus;
+    } else if (this.status && this.status !== "pending") {
+      this.approvalStatus = this.status;
+    }
   }
 
   if (this.experienceYears && !this.experience) {
@@ -170,10 +177,17 @@ artistProfileSchema.pre("validate", function () {
     this.userId = this.user;
   }
 
-  if (this.approvalStatus && !this.status) {
+  // Synchronize status and approvalStatus
+  if (this.isModified("approvalStatus") && !this.isModified("status")) {
     this.status = this.approvalStatus;
-  } else if (this.status && !this.approvalStatus) {
+  } else if (this.isModified("status") && !this.isModified("approvalStatus")) {
     this.approvalStatus = this.status;
+  } else if (this.approvalStatus !== this.status) {
+    if (this.approvalStatus && this.approvalStatus !== "pending") {
+      this.status = this.approvalStatus;
+    } else if (this.status && this.status !== "pending") {
+      this.approvalStatus = this.status;
+    }
   }
 
   if (this.experienceYears !== undefined && this.experience === undefined) {

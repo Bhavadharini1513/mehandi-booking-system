@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
@@ -44,8 +45,9 @@ function Bookings() {
   const loadBookings = async () => {
     try {
       setLoading(true);
-      const response = await getBookings();
-      setBookings(response.bookings || []);
+      const response: any = await getBookings();
+      const data = Array.isArray(response) ? response : (response?.bookings || response?.data || []);
+      setBookings(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.message || "Unable to load appointment registry");
@@ -489,7 +491,7 @@ function Bookings() {
                           {b.artist?.name || "Artist"}
                         </div>
                         <div className="text-xs text-stone-400">
-                          📍 {b.artistProfile?.location || b.artist?.city || "Tamil Nadu"}
+                          📍 {formatLocation(b.artistProfile?.location || b.artist?.city)}
                         </div>
                       </td>
 

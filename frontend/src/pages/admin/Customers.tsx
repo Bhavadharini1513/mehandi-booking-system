@@ -40,8 +40,9 @@ function Customers() {
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      const response = await getCustomers();
-      setCustomers(response.customers || []);
+      const response: any = await getCustomers();
+      const data = Array.isArray(response) ? response : (response?.customers || response?.data || []);
+      setCustomers(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.message || "Unable to load customer directory");

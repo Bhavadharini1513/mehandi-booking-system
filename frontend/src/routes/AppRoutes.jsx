@@ -237,59 +237,20 @@ function AppRoutes() {
       {/* ================= ADMIN ================= */}
 
       <Route
-        path="/admin/dashboard"
+        path="/admin"
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminLayout>
-              <AdminDashboard />
-            </AdminLayout>
+            <AdminLayout />
           </ProtectedRoute>
         }
-      />
-
-      <Route
-        path="/admin/customers"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminLayout>
-              <Customers />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/artists"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminLayout>
-              <AdminArtists />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/applications"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminLayout>
-              <ArtistApplications />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/bookings"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminLayout>
-              <Bookings />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="customers" element={<Customers />} />
+        <Route path="artists" element={<AdminArtists />} />
+        <Route path="applications" element={<ArtistApplications />} />
+        <Route path="bookings" element={<Bookings />} />
+      </Route>
 
       {/* ================= 404 ================= */}
 

@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import React, { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
@@ -41,12 +42,9 @@ const Artists: React.FC = () => {
   const loadArtists = async () => {
     try {
       setLoading(true);
-      const response = await getArtists();
-      if (response && response.success) {
-        setArtists(response.artists || []);
-      } else {
-        setArtists([]);
-      }
+      const response: any = await getArtists();
+      const data = Array.isArray(response) ? response : (response?.artists || response?.data || []);
+      setArtists(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error("ARTISTS PAGE ERROR:", error);
       toast.error(error.response?.data?.message || "Failed to load approved artists");
@@ -379,7 +377,7 @@ const Artists: React.FC = () => {
                       Territory
                     </span>
                     <span className="font-bold text-stone-800 mt-0.5 block truncate">
-                      {artist.city || artist.location || "Tamil Nadu"}
+                      {formatLocation(artist.city || artist.location)}
                     </span>
                   </div>
                 </div>
@@ -523,7 +521,7 @@ const Artists: React.FC = () => {
                       </td>
 
                       <td className="px-5 py-4 text-xs">
-                        📍 {artist.city || artist.location || "Tamil Nadu"}
+                        📍 {formatLocation(artist.city || artist.location)}
                       </td>
 
                       <td className="px-5 py-4">

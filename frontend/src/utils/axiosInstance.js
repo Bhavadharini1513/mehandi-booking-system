@@ -36,8 +36,16 @@ axiosInstance.interceptors.response.use(
   },
 
   (error) => {
-    if (error.response?.status === 401) {
-      // Token is invalid or expired — clear session and force re-login
+    const requestUrl = error.config?.url || "";
+    const isAuthRoute =
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/forgot-password") ||
+      requestUrl.includes("/auth/reset-password");
+
+    // Only redirect to /login on expired/invalid sessions for protected APIs,
+    // NEVER when the user is actively submitting credentials on an auth page.
+    if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";

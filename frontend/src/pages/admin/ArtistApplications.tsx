@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
@@ -38,13 +39,9 @@ function ArtistApplications() {
   const loadApplications = async () => {
     try {
       setLoading(true);
-      const response = await getArtistApplications();
-      if (response.success) {
-        setApplications(response.applications || []);
-      } else {
-        setApplications([]);
-        toast.error("Unable to load artist applications");
-      }
+      const response: any = await getArtistApplications();
+      const data = Array.isArray(response) ? response : (response?.applications || response?.data || []);
+      setApplications(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error("GET ARTIST APPLICATIONS ERROR:", error);
       toast.error(error.response?.data?.message || "Unable to load artist applications");
@@ -306,7 +303,7 @@ function ArtistApplications() {
                         Primary Base
                       </span>
                       <span className="text-xs font-semibold text-stone-800 mt-1 block">
-                        {application.location || application.user?.city || "Tamil Nadu"}
+                        {formatLocation(application.location || application.user?.city)}
                       </span>
                     </div>
 

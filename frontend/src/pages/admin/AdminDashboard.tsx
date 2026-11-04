@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -353,7 +354,7 @@ function AdminDashboard() {
                     <td className="px-6 py-4">
                       <div className="font-medium text-[#0F2C23]">{b.artist?.name || "Artist"}</div>
                       <div className="text-xs text-stone-400">
-                        📍 {b.artistProfile?.location || b.artist?.city || "Tamil Nadu"}
+                        📍 {formatLocation(b.artistProfile?.location || b.artist?.city)}
                       </div>
                     </td>
 
@@ -440,7 +441,7 @@ function AdminDashboard() {
                       <h4 className="font-serif font-bold text-base text-stone-900 leading-snug">
                         {artist.name}
                       </h4>
-                      <p className="text-xs text-stone-500">{artist.city || artist.location}</p>
+                      <p className="text-xs text-stone-500">{formatLocation(artist.city || artist.location)}</p>
                     </div>
                   </div>
 

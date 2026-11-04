@@ -31,6 +31,18 @@ function Login() {
     });
   };
 
+  const fillCredentials = (email, password, roleLabel) => {
+    setForm({ email, password });
+    toast.success(`${roleLabel} demo credentials filled!`, {
+      icon: "✨",
+      style: {
+        borderRadius: "12px",
+        background: "#0F2C23",
+        color: "#FDFBF7",
+      },
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,7 +67,6 @@ function Login() {
 
       if (res.user.role === "admin") {
         navigate("/admin/dashboard", { replace: true });
-
         return;
       }
 
@@ -63,7 +74,6 @@ function Login() {
 
       if (redirect && redirect.startsWith("/")) {
         navigate(redirect, { replace: true });
-
         return;
       }
 
@@ -74,7 +84,6 @@ function Login() {
       }
     } catch (err) {
       console.error("LOGIN ERROR:", err.response?.data || err.message);
-
       toast.error(err.response?.data?.message || "Login Failed");
     } finally {
       setLoading(false);
@@ -83,43 +92,106 @@ function Login() {
 
   return (
     <AuthLayout>
-      <h1 className="text-3xl font-bold text-center text-green-600">
-        Welcome Back
-      </h1>
+      <div className="text-center mb-6">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 mb-3 tracking-wide">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          MARUTHANI WORLD SECURE PORTAL
+        </span>
+        <h1 className="text-3xl font-serif font-bold text-stone-900 tracking-tight">
+          Welcome Back
+        </h1>
+        <p className="text-stone-500 text-sm mt-1">
+          Access your royal luxury henné dashboard
+        </p>
+      </div>
 
-      <p className="text-center mb-8">Login to continue</p>
+      {/* Quick Demo Credentials Pill Bar */}
+      <div className="mb-6 p-3 rounded-2xl bg-stone-50 border border-stone-200/80">
+        <p className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-2 text-center">
+          1-Click Quick Demo Login
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              fillCredentials("admin@mehandi.com", "Admin@123", "Admin")
+            }
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-amber-500 hover:text-amber-700 hover:shadow-xs transition-all cursor-pointer"
+          >
+            👑 Admin
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              fillCredentials(
+                "priya.bridal@mehandi.com",
+                "Password@123",
+                "Master Artist",
+              )
+            }
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-emerald-500 hover:text-emerald-700 hover:shadow-xs transition-all cursor-pointer"
+          >
+            🎨 Artist
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              fillCredentials(
+                "meera.client@mehandi.com",
+                "Password@123",
+                "Client",
+              )
+            }
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-blue-500 hover:text-blue-700 hover:shadow-xs transition-all cursor-pointer"
+          >
+            🛍️ Client
+          </button>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="Email"
+          label="Email Address"
           type="email"
           name="email"
-          placeholder="Enter Email"
+          placeholder="admin@mehandi.com"
           value={form.email}
           onChange={handleChange}
         />
 
-        <PasswordInput
-          label="Password"
-          name="password"
-          placeholder="Enter Password"
-          value={form.password}
-          onChange={handleChange}
-        />
-
-        <div className="text-right -mt-2 mb-4">
-          <Link to="/forgot-password" className="text-sm text-green-600">
-            Forgot password?
-          </Link>
+        <div>
+          <PasswordInput
+            label="Password"
+            name="password"
+            placeholder="Admin@123"
+            value={form.password}
+            onChange={handleChange}
+          />
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-[11px] text-stone-400">
+              Admin: <code className="bg-stone-100 px-1 py-0.5 rounded text-stone-600 font-mono">Admin@123</code>
+            </span>
+            <Link
+              to="/forgot-password"
+              className="text-xs text-emerald-800 font-semibold hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </div>
 
-        <Button text="Login" loading={loading} />
+        <div className="pt-2">
+          <Button text="Sign In to Platform" loading={loading} />
+        </div>
       </form>
 
-      <p className="text-center mt-6">
-        Don't have an account?
-        <Link to="/register" className="text-green-600 ml-2 font-bold">
-          Register
+      <p className="text-center text-sm text-stone-500 mt-6">
+        Don't have an account?{" "}
+        <Link
+          to="/register"
+          className="text-emerald-800 font-bold hover:underline"
+        >
+          Register here
         </Link>
       </p>
     </AuthLayout>

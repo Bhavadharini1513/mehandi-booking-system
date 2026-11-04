@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { Component, useState, useEffect } from "react";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   LuLayoutDashboard,
@@ -17,6 +17,53 @@ import {
   LuExternalLink,
   LuSparkles,
 } from "react-icons/lu";
+
+
+class AdminErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ADMIN ERROR BOUNDARY CAUGHT:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-[400px] flex flex-col items-center justify-center p-8 bg-white rounded-3xl border border-stone-200/80 shadow-xs text-center">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 text-2xl mb-4">
+            ⚠️
+          </div>
+          <h2 className="text-xl font-serif font-bold text-stone-900 mb-2">
+            Module Rendering Issue
+          </h2>
+          <p className="text-sm text-stone-500 max-w-md mb-6">
+            An unexpected error occurred while rendering this administrative module:{" "}
+            <span className="font-mono text-xs text-rose-600 block mt-1">
+              {this.state.error?.message || "Unknown error"}
+            </span>
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            className="px-5 py-2.5 rounded-xl bg-[#0F2C23] text-[#FDFBF7] font-semibold text-sm hover:bg-[#163E32] transition-colors cursor-pointer"
+          >
+            Reload Module
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function AdminLayout({ children }) {
   const location = useLocation();
@@ -493,7 +540,7 @@ function AdminLayout({ children }) {
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-68"
         }`}
       >
-        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto"><AdminErrorBoundary key={location.pathname}>{children || <Outlet />}</AdminErrorBoundary></div>
       </main>
     </div>
   );
