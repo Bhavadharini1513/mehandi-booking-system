@@ -1,11 +1,15 @@
 import axios from "axios";
 
+const rawUrl = import.meta.env.VITE_API_URL || "";
+const cleanUrl = rawUrl.replace(/\/+$/, "");
+export const baseURL = cleanUrl
+  ? cleanUrl.endsWith("/api")
+    ? cleanUrl
+    : `${cleanUrl}/api`
+  : "/api";
+
 const axiosInstance = axios.create({
-  // If VITE_API_URL is set (e.g. http://localhost:5000/api) use it directly;
-  // otherwise fall back to the Vite / nginx proxy path "/api".
-  baseURL: import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}`
-    : "/api",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
