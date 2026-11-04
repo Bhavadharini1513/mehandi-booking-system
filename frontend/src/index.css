@@ -1,2 +1,61 @@
 @import "tailwindcss";
 
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --color-royal-emerald: #0F2C23;
+  --color-royal-emerald-hover: #163E32;
+  --color-royal-gold: #C5A059;
+  --color-royal-gold-warm: #D4AF37;
+  --color-royal-gold-light: #FDFBF7;
+  --color-royal-gold-champagne: #F7F3E9;
+  --color-royal-maroon: #5C1D24;
+  --color-royal-bg: #FAFAFA;
+  --color-royal-surface: #FFFFFF;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-royal-bg);
+    color: #1a1a1a;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: var(--font-serif);
+  }
+}
+
+/* Custom Royal scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c5a059;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0f2c23;
+}
+
+/* Glassmorphism & Royal Glows */
+.glass-royal {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+.glow-gold {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.25);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #c5a059 0%, #e6ca85 50%, #b38b3f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

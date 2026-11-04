@@ -1,12 +1,24 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-function PasswordInput({ label, name, placeholder, value, onChange }) {
+function PasswordInput({
+  label,
+  name,
+  placeholder,
+  value,
+  onChange,
+  required = false,
+  className = "",
+}) {
   const [show, setShow] = useState(false);
 
   return (
-    <div className="mb-4">
-      <label className="block mb-2 text-gray-700 font-medium">{label}</label>
+    <div className={`mb-4 ${className}`}>
+      {label && (
+        <label className="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-[#0F2C23]">
+          {label} {required && <span className="text-rose-600">*</span>}
+        </label>
+      )}
 
       <div className="relative">
         <input
@@ -15,15 +27,17 @@ function PasswordInput({ label, name, placeholder, value, onChange }) {
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-pink-400"
+          required={required}
+          className="w-full bg-white border border-stone-300 rounded-lg px-4 py-2.5 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#0F2C23] outline-none transition-all shadow-xs hover:border-stone-400"
         />
 
         <button
           type="button"
           onClick={() => setShow(!show)}
-          className="absolute right-4 top-4"
+          aria-label={show ? "Hide password" : "Show password"}
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#C5A059] transition-colors cursor-pointer"
         >
-          {show ? <FaEyeSlash /> : <FaEye />}
+          {show ? <FaEyeSlash className="w-4 h-4" /> : <FaEye className="w-4 h-4" />}
         </button>
       </div>
     </div>

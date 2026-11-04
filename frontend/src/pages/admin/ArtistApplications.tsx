@@ -1,5 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
+import {
+  LuSearch,
+  LuRefreshCw,
+  LuClipboardList,
+  LuCheck,
+  LuX,
+  LuMail,
+  LuPhone,
+  LuMapPin,
+  LuCalendar,
+  LuSparkles,
+  LuClock,
+  LuStar,
+  LuShieldCheck,
+  LuFilter,
+} from "react-icons/lu";
 
 import {
   ArtistApplication,
@@ -12,10 +28,8 @@ function ArtistApplications() {
   const [applications, setApplications] = useState<ArtistApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
-
-  // ======================================================
-  // LOAD APPLICATIONS
-  // ======================================================
+  const [searchQuery, setSearchQuery] = useState("");
+  const [specialtyFilter, setSpecialtyFilter] = useState("all");
 
   useEffect(() => {
     loadApplications();
@@ -24,845 +38,371 @@ function ArtistApplications() {
   const loadApplications = async () => {
     try {
       setLoading(true);
-
       const response = await getArtistApplications();
-
-      console.log("ARTIST APPLICATIONS:", response);
-
       if (response.success) {
         setApplications(response.applications || []);
       } else {
         setApplications([]);
-        toast.error("Unable to load applications");
+        toast.error("Unable to load artist applications");
       }
     } catch (error: any) {
-      console.error(
-        "GET ARTIST APPLICATIONS ERROR:",
-        error.response?.data || error.message || error,
-      );
-
-      toast.error(
-        error.response?.data?.message || "Unable to load applications",
-      );
+      console.error("GET ARTIST APPLICATIONS ERROR:", error);
+      toast.error(error.response?.data?.message || "Unable to load artist applications");
     } finally {
       setLoading(false);
     }
   };
 
-  // ======================================================
-  // APPROVE ARTIST
-  // ======================================================
-
   const handleApprove = async (id: string) => {
     const application = applications.find((item) => item._id === id);
-
     const artistName = application?.user?.name || "this artist";
 
     const confirmApprove = window.confirm(
-      `Are you sure you want to approve ${artistName} as an artist?`,
+      `Confirm approval for ${artistName}? This user will immediately receive Artist credentials.`,
     );
 
-    if (!confirmApprove) {
-      return;
-    }
+    if (!confirmApprove) return;
 
     try {
       setProcessingId(id);
-
-      console.log("APPROVING ARTIST:", id);
-
       const response = await approveArtist(id);
-
-      console.log("APPROVE ARTIST RESPONSE:", response);
-
-      toast.success(
-        response?.message || "Artist application approved successfully",
-      );
-
-      // Remove from pending list
-      setApplications((previous) =>
-        previous.filter((application) => application._id !== id),
-      );
+      toast.success(response?.message || `Approved ${artistName} successfully!`);
+      setApplications((prev) => prev.filter((app) => app._id !== id));
     } catch (error: any) {
-      console.error(
-        "APPROVE ARTIST ERROR:",
-        error.response?.data || error.message || error,
-      );
-
-      toast.error(
-        error.response?.data?.message || "Unable to approve artist application",
-      );
+      console.error("APPROVE ARTIST ERROR:", error);
+      toast.error(error.response?.data?.message || "Failed to approve artist application");
     } finally {
       setProcessingId(null);
     }
   };
-
-  // ======================================================
-  // REJECT ARTIST
-  // ======================================================
 
   const handleReject = async (id: string) => {
     const application = applications.find((item) => item._id === id);
-
     const artistName = application?.user?.name || "this artist";
 
     const confirmReject = window.confirm(
-      `Are you sure you want to reject ${artistName}'s application?`,
+      `Reject ${artistName}'s application? This action cannot be undone.`,
     );
 
-    if (!confirmReject) {
-      return;
-    }
+    if (!confirmReject) return;
 
     try {
       setProcessingId(id);
-
-      console.log("REJECTING ARTIST:", id);
-
       const response = await rejectArtist(id);
-
-      console.log("REJECT ARTIST RESPONSE:", response);
-
-      toast.success(
-        response?.message || "Artist application rejected successfully",
-      );
-
-      setApplications((previous) =>
-        previous.filter((application) => application._id !== id),
-      );
+      toast.success(response?.message || "Artist application rejected");
+      setApplications((prev) => prev.filter((app) => app._id !== id));
     } catch (error: any) {
-      console.error(
-        "REJECT ARTIST ERROR:",
-        error.response?.data || error.message || error,
-      );
-
-      toast.error(
-        error.response?.data?.message || "Unable to reject application",
-      );
+      console.error("REJECT ARTIST ERROR:", error);
+      toast.error(error.response?.data?.message || "Failed to reject artist application");
     } finally {
       setProcessingId(null);
     }
   };
 
-  // ======================================================
-  // LOADING
-  // ======================================================
+  // Derive specialties
+  const uniqueSpecialties = useMemo(() => {
+    const set = new Set<string>();
+    applications.forEach((a) => {
+      if (a.specialization) set.add(a.specialization);
+    });
+    return Array.from(set).sort();
+  }, [applications]);
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          minHeight: "calc(100vh - 70px)",
-          background: "#f4f6f8",
-          padding: "40px",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
-          }}
-        >
-          <h1
-            style={{
-              margin: 0,
-              color: "#111827",
-              fontSize: "32px",
-              fontWeight: 700,
-            }}
-          >
-            Artist Applications
-          </h1>
+  // Filter
+  const filteredApplications = useMemo(() => {
+    return applications.filter((app) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        app.user?.name?.toLowerCase().includes(q) ||
+        app.user?.email?.toLowerCase().includes(q) ||
+        app.user?.phone?.toLowerCase().includes(q) ||
+        app.user?.city?.toLowerCase().includes(q) ||
+        app.location?.toLowerCase().includes(q) ||
+        app.specialization?.toLowerCase().includes(q);
 
-          <div
-            style={{
-              marginTop: "30px",
-              background: "#ffffff",
-              borderRadius: "16px",
-              padding: "60px",
-              textAlign: "center",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.07)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "40px",
-                marginBottom: "15px",
-              }}
-            >
-              ⏳
-            </div>
+      const matchesSpecialty =
+        specialtyFilter === "all" || app.specialization === specialtyFilter;
 
-            <p
-              style={{
-                margin: 0,
-                color: "#64748b",
-                fontSize: "16px",
-              }}
-            >
-              Loading artist applications...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ======================================================
-  // PAGE
-  // ======================================================
+      return matchesSearch && matchesSpecialty;
+    });
+  }, [applications, searchQuery, specialtyFilter]);
 
   return (
-    <div
-      style={{
-        minHeight: "calc(100vh - 70px)",
-        background: "#f4f6f8",
-        padding: "40px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1400px",
-          margin: "0 auto",
-        }}
-      >
-        {/* ==================================================
-            HEADER
-        ================================================== */}
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "20px",
-            marginBottom: "35px",
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                color: "#111827",
-                fontSize: "32px",
-                fontWeight: 700,
-              }}
-            >
-              Artist Applications
+    <div className="space-y-6">
+      {/* =========================================================
+          PAGE HEADER
+      ========================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-200">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="font-serif text-3xl font-bold text-[#0F2C23]">
+              Artist Credential Review
             </h1>
-
-            <p
-              style={{
-                marginTop: "8px",
-                marginBottom: 0,
-                color: "#64748b",
-                fontSize: "15px",
-              }}
-            >
-              Review artist applications and approve or reject them.
-            </p>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300">
+              {applications.length} Pending
+            </span>
           </div>
-
-          {/* APPLICATION COUNT */}
-
-          <div
-            style={{
-              background: "#006b4f",
-              color: "#ffffff",
-              borderRadius: "12px",
-              padding: "12px 22px",
-              minWidth: "125px",
-              textAlign: "center",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.10)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "26px",
-                fontWeight: 700,
-              }}
-            >
-              {applications.length}
-            </div>
-
-            <div
-              style={{
-                fontSize: "12px",
-                marginTop: "3px",
-              }}
-            >
-              Pending
-            </div>
-          </div>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            Carefully review artisan portfolios, experience qualifications, and service territories
+            before granting official roster access.
+          </p>
         </div>
 
-        {/* ==================================================
-            EMPTY
-        ================================================== */}
+        <button
+          onClick={loadApplications}
+          disabled={loading}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer self-start sm:self-auto"
+        >
+          <LuRefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#C5A059]" : ""}`} />
+          <span>Refresh Queue</span>
+        </button>
+      </div>
 
-        {applications.length === 0 ? (
-          <div
-            style={{
-              background: "#ffffff",
-              borderRadius: "18px",
-              padding: "75px 25px",
-              textAlign: "center",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.07)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "55px",
-                marginBottom: "15px",
-              }}
-            >
-              📋
-            </div>
-
-            <h2
-              style={{
-                margin: 0,
-                color: "#374151",
-                fontSize: "22px",
-              }}
-            >
-              No Pending Applications
-            </h2>
-
-            <p
-              style={{
-                color: "#64748b",
-                marginTop: "10px",
-              }}
-            >
-              There are currently no artist applications waiting for approval.
-            </p>
+      {/* =========================================================
+          FILTER / SEARCH BAR
+      ========================================================= */}
+      {applications.length > 0 && (
+        <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3.5">
+          <div className="relative flex-1 max-w-lg">
+            <LuSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C5A059]" />
+            <input
+              type="text"
+              placeholder="Filter applications by applicant name, city, specialization..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#FAF8F3] border border-stone-200 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:bg-white transition-all"
+            />
           </div>
-        ) : (
-          /* ==================================================
-             APPLICATION LIST
-          ================================================== */
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "25px",
-            }}
-          >
-            {applications.map((application) => {
-              const isProcessing = processingId === application._id;
+          <div className="flex items-center gap-2">
+            <LuFilter className="w-4 h-4 text-stone-400" />
+            <select
+              value={specialtyFilter}
+              onChange={(e) => setSpecialtyFilter(e.target.value)}
+              className="bg-[#FAF8F3] border border-stone-200 rounded-xl px-3 py-2 text-xs font-medium text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] cursor-pointer"
+            >
+              <option value="all">All Specialties ({applications.length})</option>
+              {uniqueSpecialties.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
-              return (
-                <div
-                  key={application._id}
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: "18px",
-                    overflow: "hidden",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                  }}
-                >
-                  {/* ==================================================
-                      APPLICATION HEADER
-                  ================================================== */}
+      {/* =========================================================
+          APPLICATIONS LIST
+      ========================================================= */}
+      {loading ? (
+        <div className="bg-white rounded-3xl border border-stone-200 p-16 text-center">
+          <div className="animate-spin inline-block w-8 h-8 border-3 border-[#0F2C23] border-t-transparent rounded-full mb-3"></div>
+          <p className="text-sm font-serif font-bold text-stone-800">
+            Loading candidate portfolios...
+          </p>
+        </div>
+      ) : filteredApplications.length === 0 ? (
+        /* =========================================================
+           ROYAL EMPTY STATE
+        ========================================================= */
+        <div className="bg-gradient-to-br from-[#FDFBF7] via-white to-[#F7F3E9] rounded-3xl border border-[#C5A059]/30 p-12 sm:p-16 text-center shadow-xs">
+          <div className="w-20 h-20 mx-auto rounded-full bg-[#FAF8F3] border-2 border-[#C5A059]/40 flex items-center justify-center text-3xl text-[#C5A059] shadow-xs mb-5">
+            📋
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-[#0F2C23]">
+            Queue Cleared — No Pending Applications
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto mt-2 leading-relaxed">
+            {searchQuery || specialtyFilter !== "all"
+              ? `No candidate applications matched your filter "${searchQuery}".`
+              : "All artist onboarding applications have been reviewed. New candidate submissions will appear in this workspace."}
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            {(searchQuery || specialtyFilter !== "all") && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSpecialtyFilter("all");
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer"
+              >
+                Clear Search
+              </button>
+            )}
+            <button
+              onClick={loadApplications}
+              className="px-5 py-2 rounded-xl text-xs font-bold bg-[#C5A059] hover:bg-[#b08e48] text-[#0F2C23] shadow-xs transition-colors cursor-pointer"
+            >
+              Check Again
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {filteredApplications.map((application) => {
+            const isProcessing = processingId === application._id;
 
-                  <div
-                    style={{
-                      background: "linear-gradient(135deg, #ecfdf5, #f0fdf4)",
-                      padding: "25px",
-                      borderBottom: "1px solid #d1fae5",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "20px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {/* ARTIST INFO */}
-
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "15px",
-                        }}
-                      >
-                        {/* AVATAR */}
-
-                        <div
-                          style={{
-                            width: "60px",
-                            height: "60px",
-                            minWidth: "60px",
-                            borderRadius: "50%",
-                            background: "#006b4f",
-                            color: "#ffffff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "25px",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {application.user?.name
-                            ? application.user.name.charAt(0).toUpperCase()
-                            : "A"}
-                        </div>
-
-                        <div>
-                          <h2
-                            style={{
-                              margin: 0,
-                              color: "#111827",
-                              fontSize: "22px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            {application.user?.name || "Artist"}
-                          </h2>
-
-                          <p
-                            style={{
-                              margin: "5px 0 0",
-                              color: "#047857",
-                              fontSize: "14px",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {application.specialization || "Mehndi Artist"}
-                          </p>
-                        </div>
+            return (
+              <div
+                key={application._id}
+                className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-xs hover:border-[#C5A059]/60 hover:shadow-md transition-all duration-300"
+              >
+                {/* Application Header */}
+                <div className="bg-gradient-to-r from-[#FDFBF7] via-white to-[#FAF8F3] p-6 border-b border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0F2C23] to-[#163E32] text-amber-200 border border-[#C5A059]/40 flex items-center justify-center font-bold text-xl shadow-xs">
+                      {application.user?.name ? application.user.name.charAt(0).toUpperCase() : "A"}
+                    </div>
+                    <div>
+                      <h3 className="font-serif font-bold text-xl text-stone-900 leading-snug">
+                        {application.user?.name || "Candidate Artist"}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs font-bold text-[#0F2C23]">
+                          {application.specialization || "Bridal Mehndi"}
+                        </span>
+                        <span className="text-stone-300">•</span>
+                        <span className="text-xs text-stone-500">
+                          {application.experience ?? 0} Years Experience
+                        </span>
                       </div>
+                    </div>
+                  </div>
 
-                      {/* STATUS */}
+                  <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-300">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    Pending Review
+                  </span>
+                </div>
 
-                      <span
-                        style={{
-                          background: "#fef3c7",
-                          color: "#b45309",
-                          padding: "8px 16px",
-                          borderRadius: "20px",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        PENDING
+                {/* Body Details */}
+                <div className="p-6 sm:p-8 space-y-6">
+                  {/* Contact & Territory Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="p-3.5 rounded-2xl bg-[#FAF8F3] border border-stone-200/70">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider flex items-center gap-1">
+                        <LuMail className="w-3 h-3 text-[#C5A059]" />
+                        Email Address
+                      </span>
+                      <span className="text-xs font-semibold text-stone-800 mt-1 block truncate">
+                        {application.user?.email || "Not provided"}
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-[#FAF8F3] border border-stone-200/70">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider flex items-center gap-1">
+                        <LuPhone className="w-3 h-3 text-[#C5A059]" />
+                        Phone Number
+                      </span>
+                      <span className="text-xs font-semibold text-stone-800 mt-1 block font-mono">
+                        {application.user?.phone || "Not provided"}
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-[#FAF8F3] border border-stone-200/70">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider flex items-center gap-1">
+                        <LuMapPin className="w-3 h-3 text-[#C5A059]" />
+                        Primary Base
+                      </span>
+                      <span className="text-xs font-semibold text-stone-800 mt-1 block">
+                        {application.location || application.user?.city || "Tamil Nadu"}
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-[#FAF8F3] border border-stone-200/70">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider flex items-center gap-1">
+                        <LuClock className="w-3 h-3 text-[#C5A059]" />
+                        Availability Window
+                      </span>
+                      <span className="text-xs font-semibold text-stone-800 mt-1 block truncate">
+                        {application.availableTime || "Standard Business Hours"}
                       </span>
                     </div>
                   </div>
 
-                  {/* ==================================================
-                      DETAILS
-                  ================================================== */}
-
-                  <div
-                    style={{
-                      padding: "28px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(220px, 1fr))",
-                        gap: "22px",
-                      }}
-                    >
-                      {/* EMAIL */}
-
-                      <Detail
-                        icon="📧"
-                        title="Email"
-                        value={application.user?.email || "Not provided"}
-                      />
-
-                      {/* PHONE */}
-
-                      <Detail
-                        icon="📞"
-                        title="Phone"
-                        value={application.user?.phone || "Not provided"}
-                      />
-
-                      {/* ADDRESS */}
-
-                      <Detail
-                        icon="🏠"
-                        title="Address"
-                        value={application.user?.address || "Not provided"}
-                      />
-
-                      {/* CITY */}
-
-                      <Detail
-                        icon="🏙️"
-                        title="City"
-                        value={application.user?.city || "Not provided"}
-                      />
-
-                      {/* LOCATION */}
-
-                      <Detail
-                        icon="📍"
-                        title="Artist Location"
-                        value={application.location || "Not provided"}
-                      />
-
-                      {/* EXPERIENCE */}
-
-                      <Detail
-                        icon="⭐"
-                        title="Experience"
-                        value={`${application.experience ?? 0} years`}
-                      />
-
-                      {/* AVAILABLE TIME */}
-
-                      <Detail
-                        icon="🕐"
-                        title="Available Time"
-                        value={application.availableTime || "Not provided"}
-                      />
-
-                      {/* SPECIALIZATION */}
-
-                      <Detail
-                        icon="🎨"
-                        title="Specialization"
-                        value={application.specialization || "Not provided"}
-                      />
-                    </div>
-
-                    {/* ==================================================
-                        SERVICES
-                    ================================================== */}
-
-                    <div
-                      style={{
-                        marginTop: "30px",
-                      }}
-                    >
-                      <h3
-                        style={{
-                          margin: 0,
-                          color: "#111827",
-                          fontSize: "17px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        Services
-                      </h3>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "9px",
-                          marginTop: "12px",
-                        }}
-                      >
-                        {application.services &&
-                        application.services.length > 0 ? (
-                          application.services.map((service, index) => (
+                  {/* Services & Available Locations */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                    {/* Services */}
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">
+                        Proposed Services
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {application.services && application.services.length > 0 ? (
+                          application.services.map((service, idx) => (
                             <span
-                              key={index}
-                              style={{
-                                background: "#fff1f2",
-                                color: "#be123c",
-                                padding: "7px 13px",
-                                borderRadius: "20px",
-                                fontSize: "12px",
-                                fontWeight: 600,
-                              }}
+                              key={idx}
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-900 border border-emerald-200"
                             >
                               {service}
                             </span>
                           ))
                         ) : (
-                          <span
-                            style={{
-                              color: "#94a3b8",
-                              fontSize: "13px",
-                            }}
-                          >
-                            No services specified
-                          </span>
+                          <span className="text-xs text-stone-400 italic">No services selected</span>
                         )}
                       </div>
                     </div>
 
-                    {/* ==================================================
-                        AVAILABLE LOCATIONS
-                    ================================================== */}
-
-                    <div
-                      style={{
-                        marginTop: "25px",
-                      }}
-                    >
-                      <h3
-                        style={{
-                          margin: 0,
-                          color: "#111827",
-                          fontSize: "17px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        Available Locations
-                      </h3>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "9px",
-                          marginTop: "12px",
-                        }}
-                      >
+                    {/* Locations */}
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">
+                        Covered Locations
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
                         {application.availableLocations &&
                         application.availableLocations.length > 0 ? (
-                          application.availableLocations.map(
-                            (location, index) => (
-                              <span
-                                key={index}
-                                style={{
-                                  background: "#eff6ff",
-                                  color: "#2563eb",
-                                  padding: "7px 13px",
-                                  borderRadius: "20px",
-                                  fontSize: "12px",
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {location}
-                              </span>
-                            ),
-                          )
+                          application.availableLocations.map((loc, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200"
+                            >
+                              📍 {loc}
+                            </span>
+                          ))
                         ) : (
-                          <span
-                            style={{
-                              color: "#94a3b8",
-                              fontSize: "13px",
-                            }}
-                          >
-                            No locations specified
+                          <span className="text-xs text-stone-400 italic">
+                            All Regional Venues
                           </span>
                         )}
                       </div>
                     </div>
+                  </div>
 
-                    {/* ==================================================
-                        BIO
-                    ================================================== */}
-
-                    <div
-                      style={{
-                        marginTop: "25px",
-                        padding: "20px",
-                        background: "#f8fafc",
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                      }}
-                    >
-                      <h3
-                        style={{
-                          margin: 0,
-                          color: "#111827",
-                          fontSize: "17px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        About Artist
-                      </h3>
-
-                      <p
-                        style={{
-                          margin: "10px 0 0",
-                          color: "#475569",
-                          fontSize: "14px",
-                          lineHeight: 1.7,
-                        }}
-                      >
-                        {application.bio || "No bio provided."}
-                      </p>
+                  {/* Bio statement */}
+                  {application.bio && (
+                    <div className="p-4 rounded-2xl bg-[#FAF8F3] border border-stone-200 text-xs text-stone-600 leading-relaxed">
+                      <span className="font-bold text-[#0F2C23] block mb-1">Artisan Bio:</span>
+                      "{application.bio}"
                     </div>
+                  )}
 
-                    {/* ==================================================
-                        USER ROLE
-                    ================================================== */}
-
-                    <div
-                      style={{
-                        marginTop: "20px",
-                        padding: "12px 15px",
-                        background: "#f8fafc",
-                        borderRadius: "10px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
+                  {/* Decision Action Buttons */}
+                  <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-end gap-3">
+                    <button
+                      disabled={isProcessing}
+                      onClick={() => handleReject(application._id)}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      <span
-                        style={{
-                          color: "#64748b",
-                          fontSize: "13px",
-                        }}
-                      >
-                        Current User Role
-                      </span>
+                      <LuX className="w-4 h-4" />
+                      <span>Reject Application</span>
+                    </button>
 
-                      <span
-                        style={{
-                          background: "#e0f2fe",
-                          color: "#0369a1",
-                          padding: "5px 11px",
-                          borderRadius: "15px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {application.user?.role || "customer"}
-                      </span>
-                    </div>
-
-                    {/* ==================================================
-                        ACTION BUTTONS
-                    ================================================== */}
-
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "15px",
-                        marginTop: "28px",
-                        flexWrap: "wrap",
-                      }}
+                    <button
+                      disabled={isProcessing}
+                      onClick={() => handleApprove(application._id)}
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#0F2C23] to-[#163E32] text-amber-200 border border-amber-500/40 hover:border-amber-400 hover:shadow-md transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5 active:scale-98"
                     >
-                      {/* APPROVE */}
-
-                      <button
-                        disabled={isProcessing}
-                        onClick={() => handleApprove(application._id)}
-                        style={{
-                          flex: 1,
-                          minWidth: "220px",
-                          border: "none",
-                          borderRadius: "11px",
-                          padding: "14px 20px",
-                          background: isProcessing ? "#9ca3af" : "#059669",
-                          color: "#ffffff",
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          cursor: isProcessing ? "not-allowed" : "pointer",
-                          transition: "all 0.2s ease",
-                        }}
-                      >
-                        {isProcessing ? "Processing..." : "✓ Approve Artist"}
-                      </button>
-
-                      {/* REJECT */}
-
-                      <button
-                        disabled={isProcessing}
-                        onClick={() => handleReject(application._id)}
-                        style={{
-                          flex: 1,
-                          minWidth: "220px",
-                          border: "none",
-                          borderRadius: "11px",
-                          padding: "14px 20px",
-                          background: isProcessing ? "#9ca3af" : "#dc2626",
-                          color: "#ffffff",
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          cursor: isProcessing ? "not-allowed" : "pointer",
-                          transition: "all 0.2s ease",
-                        }}
-                      >
-                        {isProcessing
-                          ? "Processing..."
-                          : "✕ Reject Application"}
-                      </button>
-                    </div>
+                      <LuCheck className="w-4 h-4 text-[#D4AF37]" />
+                      <span>{isProcessing ? "Authorizing..." : "Approve & Authorize Artist"}</span>
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ======================================================
-// DETAIL COMPONENT
-// ======================================================
-
-interface DetailProps {
-  icon: string;
-  title: string;
-  value: string;
-}
-
-function Detail({ icon, title, value }: DetailProps) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "11px",
-        alignItems: "flex-start",
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          width: "38px",
-          height: "38px",
-          minWidth: "38px",
-          borderRadius: "10px",
-          background: "#f0fdf4",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "17px",
-        }}
-      >
-        {icon}
-      </div>
-
-      <div
-        style={{
-          minWidth: 0,
-        }}
-      >
-        <div
-          style={{
-            color: "#94a3b8",
-            fontSize: "11px",
-            fontWeight: 600,
-            marginBottom: "4px",
-          }}
-        >
-          {title}
+              </div>
+            );
+          })}
         </div>
-
-        <div
-          style={{
-            color: "#1e293b",
-            fontSize: "14px",
-            fontWeight: 500,
-            wordBreak: "break-word",
-          }}
-        >
-          {value}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

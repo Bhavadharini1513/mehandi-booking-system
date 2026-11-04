@@ -28,7 +28,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../components/layouts/Navbar";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
-import AdminNavbar from "../components/layouts/AdminNavbar";
+import AdminLayout from "../components/layouts/AdminLayout";
 import Customers from "../pages/admin/Customers";
 import AdminArtists from "../pages/admin/Artists";
 import ArtistApplications from "../pages/admin/ArtistApplications";
@@ -38,15 +38,6 @@ function CustomerLayout({ children }) {
   return (
     <>
       <Navbar />
-      {children}
-    </>
-  );
-}
-
-function AdminLayout({ children }) {
-  return (
-    <>
-      <AdminNavbar />
       {children}
     </>
   );
