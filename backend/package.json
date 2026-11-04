@@ -7,7 +7,7 @@
     "test": "node --test tests/e2e.test.js",
     "start": "node server.js",
     "create-admin": "node createAdmin.js",
-    "seed": "node seedData.js",
+    "seed": "node seed.js",
     "dev": "nodemon server.js",
     "demo:fs": "node node-demos/01-fs.js",
     "demo:http": "node node-demos/02-http.js",

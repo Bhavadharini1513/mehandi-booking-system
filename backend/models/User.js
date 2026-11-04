@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -15,33 +16,39 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    phone: {
-      type: String,
-      required: [true, "Phone number is required"],
-      trim: true,
-    },
-
-    address: {
-      type: String,
-      required: [true, "Address is required"],
-      trim: true,
-    },
-
-    city: {
-      type: String,
-      required: [true, "City is required"],
-      trim: true,
-    },
-
     password: {
       type: String,
       required: [true, "Password is required"],
+      select: false,
+    },
+
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     role: {
       type: String,
       enum: ["customer", "artist", "admin"],
       default: "customer",
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    address: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     // Forgot-password flow (only the SHA-256 hash of the token is stored)

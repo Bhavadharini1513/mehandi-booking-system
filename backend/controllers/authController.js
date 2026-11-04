@@ -166,7 +166,7 @@ const login = async (req, res) => {
 
     const user = await User.findOne({
       email: email.toLowerCase().trim(),
-    });
+    }).select("+password");
 
     if (!user) {
       return res.status(401).json({

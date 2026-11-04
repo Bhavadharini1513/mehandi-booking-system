@@ -53,7 +53,7 @@ const updateProfile = async (req, res) => {
   try {
     const { name, phone, address, city } = req.body;
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select("+password");
 
     if (!user) {
       return res.status(404).json({
@@ -117,7 +117,7 @@ const changePassword = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select("+password");
 
     if (!user) {
       return res.status(404).json({
