@@ -20,6 +20,8 @@ import ArtistDashboard from "../pages/artist/ArtistDashboard";
 import ArtistApplicationStatus from "../pages/artist/ArtistApplicationStatus";
 
 import Profile from "../pages/dashboard/Profile";
+import Dashboard from "../pages/dashboard/Dashboard";
+import ChangePassword from "../pages/dashboard/ChangePassword";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -179,6 +181,28 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={["customer", "artist"]}>
             <CustomerLayout>
               <Profile />
+            </CustomerLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["customer", "artist", "admin"]}>
+            <CustomerLayout>
+              <Dashboard />
+            </CustomerLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute allowedRoles={["customer", "artist", "admin"]}>
+            <CustomerLayout>
+              <ChangePassword />
             </CustomerLayout>
           </ProtectedRoute>
         }

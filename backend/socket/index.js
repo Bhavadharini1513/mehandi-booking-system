@@ -15,7 +15,14 @@ const Booking = require("../models/Booking");
 */
 const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
-    cors: { origin: true, credentials: true },
+    cors: {
+      origin: [
+        process.env.CLIENT_URL,
+        "http://localhost:5173",
+        "http://localhost:8080",
+      ].filter(Boolean),
+      credentials: true,
+    },
   });
 
   // Authenticate every connection

@@ -1,5 +1,10 @@
 require("dotenv").config();
 
+// Force Google + Cloudflare DNS so MongoDB Atlas SRV lookups work
+// even when the system DNS is broken / corporate-firewalled.
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
 const http = require("http");
 const mongoose = require("mongoose");
 
