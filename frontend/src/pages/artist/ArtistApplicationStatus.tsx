@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -112,7 +113,7 @@ function ArtistApplicationStatus() {
           </p>
 
           <p>
-            <strong>Location:</strong> {application.location}
+            <strong>Location:</strong> {formatLocation(application.location)}
           </p>
         </div>
       </div>

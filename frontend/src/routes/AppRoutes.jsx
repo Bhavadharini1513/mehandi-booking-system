@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import React, { Component } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -34,11 +35,60 @@ import AdminArtists from "../pages/admin/Artists";
 import ArtistApplications from "../pages/admin/ArtistApplications";
 import Bookings from "../pages/admin/Bookings";
 
+class GlobalErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("GLOBAL ERROR BOUNDARY CAUGHT:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-[500px] flex flex-col items-center justify-center p-8 bg-[#FAF8F3] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 text-3xl mb-4 shadow-xs">
+            🌿
+          </div>
+          <h2 className="text-2xl font-serif font-bold text-stone-900 mb-2">
+            Module Refresh Required
+          </h2>
+          <p className="text-sm text-stone-500 max-w-md mb-6">
+            A temporary layout issue occurred. Click below to reload:
+            <span className="font-mono text-xs text-rose-600 block mt-1">
+              {this.state.error?.message || "Unknown error"}
+            </span>
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            className="px-6 py-2.5 rounded-xl bg-[#0F2C23] text-[#FDFBF7] font-semibold text-sm hover:bg-[#163E32] transition-colors cursor-pointer shadow-xs"
+          >
+            Reload Module
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function CustomerLayout({ children }) {
+  const location = useLocation();
   return (
     <>
       <Navbar />
-      {children}
+      <GlobalErrorBoundary key={location.pathname}>
+        {children}
+      </GlobalErrorBoundary>
     </>
   );
 }

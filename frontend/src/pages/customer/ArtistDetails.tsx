@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -78,7 +79,7 @@ function ArtistDetails() {
 
                 <p className="text-emerald-50 mt-1">{artist.specialization}</p>
 
-                <p className="mt-2">📍 {artist.location}</p>
+                <p className="mt-2">📍 {formatLocation(artist.location)}</p>
               </div>
             </div>
           </div>
@@ -148,7 +149,7 @@ function ArtistDetails() {
               </h2>
 
               <div className="flex flex-wrap gap-3 mt-4">
-                {[artist.location, ...artist.availableLocations]
+                {[formatLocation(artist.location), ...(artist.availableLocations || [])]
                   .filter(
                     (item, index, array) =>
                       item && array.indexOf(item) === index,

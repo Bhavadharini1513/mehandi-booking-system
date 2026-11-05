@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -118,7 +119,7 @@ function ArtistDashboard() {
             <div>
               <p className="font-semibold">Location</p>
 
-              <p className="text-gray-600">{profile.location}</p>
+              <p className="text-gray-600">{formatLocation(profile.location)}</p>
             </div>
 
             <div>

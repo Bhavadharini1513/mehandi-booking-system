@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -195,7 +196,7 @@ function Artists() {
                   </p>
 
                   <div className="mt-4 space-y-2 text-gray-600 text-sm">
-                    <p>📍 {artist.location}</p>
+                    <p>📍 {formatLocation(artist.location)}</p>
 
                     <p>⭐ {artist.rating.toFixed(1)} / 5</p>
 

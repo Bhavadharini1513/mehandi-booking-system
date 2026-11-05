@@ -184,9 +184,14 @@ const getArtistProfile = async (req, res) => {
       });
     }
 
+    const profileObj = profile.toObject();
+    if (typeof profileObj.location === "object" && profileObj.location !== null) {
+      profileObj.location = profileObj.location.city || profileObj.location.address || "Tamil Nadu";
+    }
+
     return res.status(200).json({
       success: true,
-      profile,
+      profile: profileObj,
     });
   } catch (error) {
     console.error("GET ARTIST PROFILE ERROR:", error);
@@ -338,7 +343,7 @@ const getApprovedArtists = async (req, res) => {
 
       experience: profile.experience,
       specialization: profile.specialization,
-      location: profile.location,
+      location: typeof profile.location === "object" && profile.location !== null ? (profile.location.city || profile.location.address || "Tamil Nadu") : (profile.location || "Tamil Nadu"),
       availableLocations: profile.availableLocations || [],
       availableTime: profile.availableTime || "",
       services: profile.services || [],
@@ -408,7 +413,7 @@ const getArtistById = async (req, res) => {
         role: profile.user.role,
         experience: profile.experience,
         specialization: profile.specialization,
-        location: profile.location,
+        location: typeof profile.location === "object" && profile.location !== null ? (profile.location.city || profile.location.address || "Tamil Nadu") : (profile.location || "Tamil Nadu"),
         availableLocations: profile.availableLocations || [],
         availableTime: profile.availableTime || "",
         services: profile.services || [],

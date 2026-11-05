@@ -1,3 +1,4 @@
+import { formatLocation } from "../../utils/formatters";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -208,7 +209,7 @@ function BookArtist() {
             </h1>
 
             <p className="text-gray-500 mt-1">
-              📍 {artist.location} · 💼 {artist.experience} yrs · ₹
+              📍 {formatLocation(artist.location)} · 💼 {artist.experience} yrs · ₹
               {artist.pricePerHour} / hour
             </p>
           </div>
