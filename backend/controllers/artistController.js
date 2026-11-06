@@ -438,11 +438,22 @@ const getArtistById = async (req, res) => {
 
 const getPendingApplications = async (req, res) => {
   try {
-    const applications = await ArtistProfile.find({
+    const rawApps = await ArtistProfile.find({
       status: "pending",
     })
       .populate("user", "name email phone address city role")
       .sort({ createdAt: -1 });
+
+    const applications = rawApps.map((app) => {
+      const doc = app.toObject ? app.toObject() : { ...app };
+      if (typeof doc.location === "object" && doc.location !== null) {
+        doc.location = doc.location.city || doc.location.address || "Tamil Nadu";
+      }
+      if (doc.user && typeof doc.user.city === "object" && doc.user.city !== null) {
+        doc.user.city = doc.user.city.city || doc.user.city.address || "Tamil Nadu";
+      }
+      return doc;
+    });
 
     return res.status(200).json({
       success: true,

@@ -87,8 +87,7 @@ const seedDatabase = async () => {
       specialization: "Royal Marwari & Grand Bridal",
       services: ["Bridal Mehndi", "Royal Marwari", "Figure Henna", "Sangeet Event"],
       pricePerHour: 800,
-      profileImage:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
+      profileImage: "/assets/artists/priya-sundaram.webp",
       rating: 5,
       totalReviews: 48,
     });
@@ -119,8 +118,7 @@ const seedDatabase = async () => {
       specialization: "Contemporary Arabic & Minimalist",
       services: ["Arabic Design", "Indo-Western Fusion", "Minimalist Wrist", "Party Henna"],
       pricePerHour: 600,
-      profileImage:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
+      profileImage: "/assets/artists/ananya-sharma.webp",
       rating: 4.9,
       totalReviews: 34,
     });
@@ -151,8 +149,7 @@ const seedDatabase = async () => {
       specialization: "Grand Wedding & Custom Portraits",
       services: ["Bridal Mehndi", "Custom Portrait Henna", "Sangeet Event", "Traditional Mehndi"],
       pricePerHour: 1000,
-      profileImage:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+      profileImage: "/assets/artists/kavitha-rajan.webp",
       rating: 5,
       totalReviews: 62,
     });
@@ -187,6 +184,7 @@ const seedDatabase = async () => {
       specialization: "Gujarati & Rajasthani Bridal",
       services: ["Bridal Mehndi", "Gujarati Henna", "Traditional Mehndi"],
       pricePerHour: 500,
+      profileImage: "/assets/artists/meera-patel.webp",
     });
 
     const rituUser = await User.create({
@@ -215,6 +213,7 @@ const seedDatabase = async () => {
       specialization: "Festive & Party Henna",
       services: ["Festive Mehndi", "Party Henna", "Arabic Design"],
       pricePerHour: 450,
+      profileImage: "/assets/artists/ritu-verma.webp",
     });
 
     console.log("Created 2 Pending Artist Applications (Meera, Ritu).");

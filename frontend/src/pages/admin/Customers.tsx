@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
+import { formatLocation } from "../../utils/formatters";
 import {
   LuSearch,
   LuDownload,
@@ -55,7 +56,8 @@ function Customers() {
   const uniqueCities = useMemo(() => {
     const set = new Set<string>();
     customers.forEach((c) => {
-      if (c.city) set.add(c.city);
+      const cityStr = formatLocation(c.city);
+      if (cityStr && cityStr !== "Tamil Nadu") set.add(cityStr);
     });
     return Array.from(set).sort();
   }, [customers]);
@@ -64,13 +66,14 @@ function Customers() {
   const filteredCustomers = useMemo(() => {
     return customers.filter((customer) => {
       const q = searchQuery.toLowerCase();
+      const cityStr = formatLocation(customer.city);
       const matchesSearch =
         customer.name?.toLowerCase().includes(q) ||
         customer.email?.toLowerCase().includes(q) ||
         customer.phone?.toLowerCase().includes(q) ||
-        customer.city?.toLowerCase().includes(q);
+        cityStr.toLowerCase().includes(q);
 
-      const matchesCity = cityFilter === "all" || customer.city === cityFilter;
+      const matchesCity = cityFilter === "all" || cityStr === cityFilter;
       return matchesSearch && matchesCity;
     });
   }, [customers, searchQuery, cityFilter]);
@@ -141,8 +144,8 @@ function Customers() {
       `"${c.name || ""}"`,
       `"${c.email || ""}"`,
       `"${c.phone || ""}"`,
-      `"${c.address || ""}"`,
-      `"${c.city || ""}"`,
+      `"${typeof c.address === "object" ? formatLocation(c.address) : (c.address || "")}"`,
+      `"${formatLocation(c.city)}"`,
       `"${new Date(c.createdAt).toLocaleDateString()}"`,
     ]);
 
@@ -410,7 +413,7 @@ function Customers() {
 
                       <td className="px-5 py-4 text-xs">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 font-medium">
-                          📍 {customer.city || "Tamil Nadu"}
+                          📍 {formatLocation(customer.city)}
                         </span>
                       </td>
 
@@ -499,7 +502,7 @@ function Customers() {
                   </div>
                   <div className="flex items-center gap-2">
                     <LuMapPin className="w-3.5 h-3.5 text-[#C5A059]" />
-                    <span>{customer.city || "Tamil Nadu"}</span>
+                    <span>{formatLocation(customer.city)}</span>
                   </div>
                 </div>
               </div>

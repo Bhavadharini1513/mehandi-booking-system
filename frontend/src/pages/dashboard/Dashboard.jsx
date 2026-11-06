@@ -28,7 +28,7 @@ function Dashboard() {
 
           <p>Phone: {user?.phone}</p>
 
-          <p>City: {user?.city}</p>
+          <p>City: {typeof user?.city === "object" ? (user.city?.city || user.city?.address || "Tamil Nadu") : (user?.city || "Tamil Nadu")}</p>
 
           <button
             onClick={handleLogout}

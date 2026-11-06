@@ -8,9 +8,24 @@ const Booking = require("../models/Booking");
 
 const getCustomers = async (req, res) => {
   try {
-    const customers = await User.find({ role: "customer" })
+    const rawCustomers = await User.find({ role: "customer" })
       .select("-password")
       .sort({ createdAt: -1 });
+
+    const customers = rawCustomers.map((c) => {
+      const doc = c.toObject ? c.toObject() : { ...c };
+      return {
+        ...doc,
+        city:
+          typeof doc.city === "object" && doc.city !== null
+            ? doc.city.city || doc.city.address || "Tamil Nadu"
+            : doc.city || "Tamil Nadu",
+        address:
+          typeof doc.address === "object" && doc.address !== null
+            ? doc.address.address || doc.address.street || ""
+            : doc.address || "",
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -183,11 +198,22 @@ const getDashboardStats = async (req, res) => {
 
 const getArtistApplications = async (req, res) => {
   try {
-    const applications = await ArtistProfile.find({
+    const rawApps = await ArtistProfile.find({
       $or: [{ status: "pending" }, { approvalStatus: "pending" }],
     })
       .populate("user", "name email phone address city role")
       .sort({ createdAt: -1 });
+
+    const applications = rawApps.map((app) => {
+      const doc = app.toObject ? app.toObject() : { ...app };
+      if (typeof doc.location === "object" && doc.location !== null) {
+        doc.location = doc.location.city || doc.location.address || "Tamil Nadu";
+      }
+      if (doc.user && typeof doc.user.city === "object" && doc.user.city !== null) {
+        doc.user.city = doc.user.city.city || doc.user.city.address || "Tamil Nadu";
+      }
+      return doc;
+    });
 
     return res.status(200).json({
       success: true,
@@ -351,13 +377,28 @@ const rejectArtist = async (req, res) => {
 
 const getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find()
+    const rawBookings = await Booking.find()
       .populate("customer", "name email phone city")
       .populate("artist", "name email phone city")
       .populate("artistProfile", "location specialization services bio")
       .sort({
         bookingDate: -1,
       });
+
+    const bookings = rawBookings.map((b) => {
+      const doc = b.toObject ? b.toObject() : { ...b };
+      if (doc.artistProfile && typeof doc.artistProfile.location === "object" && doc.artistProfile.location !== null) {
+        doc.artistProfile.location =
+          doc.artistProfile.location.city || doc.artistProfile.location.address || "Tamil Nadu";
+      }
+      if (doc.customer && typeof doc.customer.city === "object" && doc.customer.city !== null) {
+        doc.customer.city = doc.customer.city.city || doc.customer.city.address || "Tamil Nadu";
+      }
+      if (doc.artist && typeof doc.artist.city === "object" && doc.artist.city !== null) {
+        doc.artist.city = doc.artist.city.city || doc.artist.city.address || "Tamil Nadu";
+      }
+      return doc;
+    });
 
     return res.status(200).json({
       success: true,

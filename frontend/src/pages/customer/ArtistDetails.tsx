@@ -5,6 +5,37 @@ import toast from "react-hot-toast";
 
 import { getArtistById, PublicArtist } from "../../services/artistService";
 
+const LOCAL_ARTIST_PORTRAITS: Record<string, string> = {
+  "priya sundaram": "/assets/artists/priya-sundaram.webp",
+  "ananya sharma": "/assets/artists/ananya-sharma.webp",
+  "kavitha rajan": "/assets/artists/kavitha-rajan.webp",
+  "meera patel": "/assets/artists/meera-patel.webp",
+  "ritu verma": "/assets/artists/ritu-verma.webp",
+  "arjun reddy": "/assets/artists/arjun-reddy.webp",
+};
+
+const DEFAULT_PORTRAIT = "/assets/artists/priya-sundaram.webp";
+
+const getArtistPhoto = (artist: any): string => {
+  if (
+    artist?.profileImage &&
+    typeof artist.profileImage === "string" &&
+    artist.profileImage.startsWith("/assets/")
+  ) {
+    return artist.profileImage;
+  }
+  const nameLower = (artist?.name || "").toLowerCase().trim();
+  if (LOCAL_ARTIST_PORTRAITS[nameLower]) {
+    return LOCAL_ARTIST_PORTRAITS[nameLower];
+  }
+  for (const [key, path] of Object.entries(LOCAL_ARTIST_PORTRAITS)) {
+    if (nameLower.includes(key) || key.includes(nameLower)) {
+      return path;
+    }
+  }
+  return DEFAULT_PORTRAIT;
+};
+
 function ArtistDetails() {
   const { id } = useParams();
 
@@ -62,16 +93,15 @@ function ArtistDetails() {
         <div className="bg-white rounded-3xl shadow-xl mt-6 overflow-hidden">
           <div className="bg-gradient-to-r from-emerald-700 to-emerald-500 text-white p-8">
             <div className="flex flex-col md:flex-row md:items-center gap-6">
-              <div className="w-28 h-28 rounded-full bg-white text-5xl flex items-center justify-center">
-                {artist.profileImage ? (
-                  <img
-                    src={artist.profileImage}
-                    alt={artist.name}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  "🌿"
-                )}
+              <div className="w-28 h-28 rounded-full bg-white text-5xl flex items-center justify-center overflow-hidden border-2 border-white/80 shadow-md">
+                <img
+                  src={getArtistPhoto(artist)}
+                  alt={artist.name}
+                  className="w-full h-full object-cover object-top"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = DEFAULT_PORTRAIT;
+                  }}
+                />
               </div>
 
               <div>
