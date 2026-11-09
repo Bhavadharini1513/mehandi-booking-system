@@ -26,6 +26,13 @@ const connectDB = async () => {
     // make sure the UNIQUE slot index exists before the first booking
     await SlotLock.init();
 
+    // Ensure the system administrator profile uses Bhava Dharini
+    const User = require("./models/User");
+    await User.updateMany(
+      { $or: [{ role: "admin" }, { email: "admin@mehandi.com" }] },
+      { $set: { name: "Bhava Dharini" } }
+    ).catch(() => {});
+
     console.log("=================================");
     console.log("MongoDB Connected Successfully");
     console.log("=================================");

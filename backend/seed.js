@@ -48,7 +48,7 @@ const seedDatabase = async () => {
     // 3. SEED ADMIN USER
     console.log("Creating System Administrator...");
     const adminUser = await User.create({
-      name: "Jeeva Admin",
+      name: "Bhava Dharini",
       email: "admin@mehandi.com",
       password: adminPasswordHash,
       role: "admin",

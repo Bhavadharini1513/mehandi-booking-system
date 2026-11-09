@@ -76,6 +76,10 @@ function AdminLayout({ children }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const adminName =
+    user?.name && !user.name.toLowerCase().includes("jeeva")
+      ? user.name
+      : "Bhava Dharini";
 
   // Keyboard shortcut listener: Ctrl + K or Cmd + K
   useEffect(() => {
@@ -275,11 +279,11 @@ function AdminLayout({ children }) {
           {/* User Profile Pill */}
           <div className="flex items-center gap-2.5 pl-2 border-l border-stone-200">
             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#0F2C23] to-[#C5A059] text-white flex items-center justify-center font-bold text-sm shadow-xs ring-2 ring-[#C5A059]/30">
-              {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
+              {adminName ? adminName.charAt(0).toUpperCase() : "B"}
             </div>
             <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-bold text-stone-900 leading-tight">
-                {user?.name || "System Admin"}
+                {adminName}
               </span>
               <span className="text-[11px] text-[#C5A059] font-medium flex items-center gap-1">
                 <LuShieldCheck className="w-3 h-3 text-[#C5A059]" />

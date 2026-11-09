@@ -188,6 +188,12 @@ const login = async (req, res) => {
       });
     }
 
+    // Ensure admin user name is Bhava Dharini
+    if (user.role === "admin" && user.name !== "Bhava Dharini") {
+      user.name = "Bhava Dharini";
+      await User.updateOne({ _id: user._id }, { $set: { name: "Bhava Dharini" } });
+    }
+
     /* -----------------------------------------
        CREATE JWT
     ----------------------------------------- */
